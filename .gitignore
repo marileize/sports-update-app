@@ -35,8 +35,9 @@ yarn-error.*
 # typescript
 *.tsbuildinfo
 
-# Firebase
+# Config files
 config/firebaseConfig.js
+config/serpApiConfig.js
 
 # WebStorm files
 .idea/
