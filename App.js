@@ -1,84 +1,58 @@
-import React, { useState, useEffect } from 'react';
+import React, { useContext } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { onAuthStateChanged } from 'firebase/auth';
-import { auth } from './config/firebaseConfig';
+import { AuthProvider, AuthContext } from './AuthContext';
 import Login from './app/screens/login';
 import Register from './app/screens/register';
-import { View, Text, Button, StyleSheet } from 'react-native';
+import Home from './app/screens/home';
+import AddTeam from './app/screens/addTeam';
+import { View, Text, StyleSheet } from 'react-native';
 
 const Stack = createNativeStackNavigator();
 
-export default function App() {
-  const [user, setUser] = useState(null);
-  const [initializing, setInitializing] = useState(true);
+const AppNavigator = () => {
+    const { user, initializing } = useContext(AuthContext);
 
-  // Monitor authentication state
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      console.log('Auth state changed:', currentUser);
-      setUser(currentUser);
-      if (initializing) setInitializing(false);
-    });
-
-    // Cleanup subscription on unmount
-    return () => unsubscribe();
-  }, [initializing]);
-
-  if (initializing) {
-    // Optionally show a loading screen during initialization
-    return (
-        <View style={styles.container}>
-          <Text>Loading...</Text>
-        </View>
-    );
-  }
-
-  return (
-      <NavigationContainer>
-        <Stack.Navigator>
-          {user ? (
-              <Stack.Screen name="Home" component={HomeScreen} />
-          ) : (
-              <>
-                <Stack.Screen name="Login" component={Login} />
-                <Stack.Screen name="Register" component={Register} />
-              </>
-          )}
-        </Stack.Navigator>
-      </NavigationContainer>
-  );
-}
-
-function HomeScreen() {
-  const handleLogout = async () => {
-    try {
-      await auth.signOut();
-      alert('Successfully logged out');
-    } catch (error) {
-      alert('Logout failed: ' + error.message);
+    if (initializing) {
+        return (
+            <View style={styles.loadingContainer}>
+                <Text>Loading...</Text>
+            </View>
+        );
     }
-  };
 
-  return (
-      <View style={styles.container}>
-        <Text style={styles.title}>Welcome to the Home Screen!</Text>
-        <Button title="Logout" onPress={handleLogout} />
-      </View>
-  );
+    return (
+        <Stack.Navigator id="MainStack" initialRouteName={user ? "Home" : "Login"}>
+            {user ? (
+                <>
+                    <Stack.Screen name="Home" component={Home} />
+                    <Stack.Screen name="AddTeam" component={AddTeam} />
+                </>
+            ) : (
+                <>
+                    <Stack.Screen name="Login" component={Login} />
+                    <Stack.Screen name="Register" component={Register} />
+                </>
+            )}
+        </Stack.Navigator>
+    );
+};
+
+export default function App() {
+    return (
+        <AuthProvider>
+            <NavigationContainer>
+                <AppNavigator />
+            </NavigationContainer>
+        </AuthProvider>
+    );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-    padding: 20,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 20,
-  },
+    loadingContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#fff',
+    },
 });

@@ -37,3 +37,6 @@ yarn-error.*
 
 # Firebase
 config/firebaseConfig.js
+
+# WebStorm files
+.idea/
