@@ -4,6 +4,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { AuthProvider, AuthContext } from './AuthContext';
 import Login from './app/screens/login';
 import Register from './app/screens/register';
+import ResetPassword from './app/screens/resetPassword';
 import Home from './app/screens/home';
 import AddTeam from './app/screens/addTeam';
 import { View, Text, StyleSheet } from 'react-native';
@@ -32,6 +33,7 @@ const AppNavigator = () => {
                 <>
                     <Stack.Screen name="Login" component={Login} />
                     <Stack.Screen name="Register" component={Register} />
+                    <Stack.Screen name="ResetPassword" component={ResetPassword} />
                 </>
             )}
         </Stack.Navigator>

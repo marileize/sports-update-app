@@ -44,6 +44,10 @@ const Login = () => {
             <Text style={styles.linkText} onPress={() => navigation.navigate('Register')}>
                 Don't have an account? Register
             </Text>
+            <Text style={styles.linkText} onPress={() => navigation.navigate('ResetPassword')}>
+                Forgot Password?
+            </Text>
+
         </View>
     );
 };
