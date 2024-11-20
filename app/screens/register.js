@@ -1,32 +1,60 @@
-import React, { useState, useEffect } from 'react';
-import { View, TextInput, Button, Alert, StyleSheet, Text } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import React, { useState } from 'react';
+import { View, TextInput, Button, StyleSheet, Text, Alert } from 'react-native';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { getFirestore, setDoc, doc } from "firebase/firestore";
 import { auth } from '../../config/firebaseConfig'; // Adjust the path as needed
 
+const db = getFirestore();
+
 const Register = () => {
-    const navigation = useNavigation();
+    const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-
-    // Add the useEffect here
-    useEffect(() => {
-        console.log('Register screen rendered');
-    }, []);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const handleRegister = async () => {
+        if (isSubmitting) return;
+
+        if (!name.trim()) {
+            Alert.alert('Validation Error', 'Name is required.');
+            return;
+        }
+        if (!email.trim()) {
+            Alert.alert('Validation Error', 'Email is required.');
+            return;
+        }
+        if (!password.trim()) {
+            Alert.alert('Validation Error', 'Password is required.');
+            return;
+        }
+
+        setIsSubmitting(true);
         try {
-            await createUserWithEmailAndPassword(auth, email, password);
+            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+            const user = userCredential.user;
+
+            await setDoc(doc(db, 'users', user.uid), {
+                name: name.trim(),
+                email: email.trim(),
+            });
+
             Alert.alert('Registration Successful', 'Your account has been created!');
-            navigation.navigate('Login'); // Navigate to the login screen after successful registration
         } catch (error) {
             Alert.alert('Registration Failed', error.message);
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
     return (
         <View style={styles.container}>
             <Text style={styles.title}>Register</Text>
+            <TextInput
+                style={styles.input}
+                placeholder="Name"
+                value={name}
+                onChangeText={setName}
+            />
             <TextInput
                 style={styles.input}
                 placeholder="Email"
@@ -41,10 +69,7 @@ const Register = () => {
                 onChangeText={setPassword}
                 secureTextEntry
             />
-            <Button title="Register" onPress={handleRegister} />
-            <Text style={styles.linkText} onPress={() => navigation.navigate('Login')}>
-                Already have an account? Login
-            </Text>
+            <Button title="Register" onPress={handleRegister} disabled={isSubmitting} />
         </View>
     );
 };
