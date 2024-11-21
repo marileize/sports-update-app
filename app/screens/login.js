@@ -2,18 +2,37 @@ import React, { useState, useEffect } from 'react';
 import { View, TextInput, Button, Alert, StyleSheet, Text } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '../../config/firebaseConfig'; // Adjust the path as needed
+import { auth } from '../../config/firebaseConfig';
 
+/**
+ * Login screen component for user authentication.
+ *
+ * This component provides a user interface for logging in with email and password.
+ * It also includes links to the Register and Reset Password screens.
+ *
+ * @component
+ * @returns {JSX.Element} The rendered login screen.
+ */
 const Login = () => {
-    const navigation = useNavigation();
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
+    const navigation = useNavigation(); // Used to navigate between screens.
+    const [email, setEmail] = useState(''); // Stores the user's email input.
+    const [password, setPassword] = useState(''); // Stores the user's password input.
 
-    // Add the useEffect here
+    /**
+     * Logs a message when the login screen is rendered.
+     *
+     * @useEffect Logs a message every time the component renders.
+     */
     useEffect(() => {
         console.log('Login screen rendered');
     }, []);
 
+    /**
+     * Handles user login with email and password.
+     *
+     * This function attempts to log in the user using Firebase Authentication.
+     * If successful, an alert confirms the login. If an error occurs, an alert displays the error message.
+     */
     const handleLogin = async () => {
         try {
             await signInWithEmailAndPassword(auth, email, password);

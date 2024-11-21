@@ -7,13 +7,25 @@ import { db } from '../../config/firebaseConfig';
 import serpApiConfig from '../../config/serpApiConfig';
 import axios from 'axios';
 
+/**
+ * Home screen component that displays a list of sports teams and their latest match results.
+ *
+ * This component fetches the user's sports teams from Firebase Firestore
+ * and their corresponding match results from SerpApi.
+ *
+ * @component
+ * @returns {JSX.Element} The rendered component.
+ */
 export default function Home() {
     const navigation = useNavigation();
     const { logout, user } = useContext(AuthContext);
-    const [sportsTeams, setSportsTeams] = useState([]);
-    const [sportsResults, setSportsResults] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [sportsTeams, setSportsTeams] = useState([]); // Stores the user's sports teams
+    const [sportsResults, setSportsResults] = useState([]); // Stores the match results for the sports teams
+    const [loading, setLoading] = useState(true); // Tracks loading state
 
+    /**
+     * Fetches the user's sports teams from the Firebase Firestore database.
+     */
     useEffect(() => {
         const fetchSportsTeams = async () => {
             try {
@@ -23,7 +35,11 @@ export default function Home() {
                 }
                 console.log('Fetching sports and teams for user ID:', user.uid);
 
-                const teamsQuery = query(collection(db, 'sports_teams'), where('userId', '==', user.uid));
+                const teamsQuery = query(
+                    collection(db, 'sports_teams'),
+                    where('userId', '==', user.uid)
+                );
+
                 const querySnapshot = await getDocs(teamsQuery);
 
                 const teams = [];
@@ -42,6 +58,9 @@ export default function Home() {
         fetchSportsTeams();
     }, [user?.uid]);
 
+    /**
+     * Fetches the latest match results for the user's sports teams using the SerpApi.
+     */
     useEffect(() => {
         const fetchSportsResults = async () => {
             try {
@@ -61,8 +80,8 @@ export default function Home() {
 
                         if (sportsResults && sportsResults.game_spotlight && sportsResults.game_spotlight.teams) {
                             const teams = sportsResults.game_spotlight.teams;
-                            const matchInfo = `${teams[0].name} ${teams[0].score} X ${teams[1].score} ${teams[1].name}`;
-
+                            const matchInfo = `${teams[0].name} ${teams[0].score} X ` +
+                                                     `${teams[1].score} ${teams[1].name}`;
                             return {
                                 team: team.team,
                                 sport: team.sport,
@@ -91,7 +110,9 @@ export default function Home() {
     }, [sportsTeams]);
 
 
-
+    /**
+     * Navigates to the "AddTeam" screen.
+     */
     const navigateToAddTeam = () => {
         navigation.navigate('AddTeam');
     };

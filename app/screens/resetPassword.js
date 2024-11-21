@@ -1,11 +1,30 @@
 import React, { useState } from 'react';
 import { View, TextInput, Button, Alert, StyleSheet, Text } from 'react-native';
 import { sendPasswordResetEmail } from 'firebase/auth';
-import { auth } from '../../config/firebaseConfig'; // Adjust the path as needed
+import { auth } from '../../config/firebaseConfig';
 
+/**
+ * ResetPassword screen component for initiating a password reset process.
+ *
+ * This component allows users to request a password reset email by providing their email address.
+ * It interacts with Firebase Authentication to send a reset password email.
+ *
+ * @component
+ * @param {Object} props - The component props.
+ * @param {Object} props.navigation - Navigation object for navigating between screens.
+ * @returns {JSX.Element} The rendered ResetPassword screen.
+ */
 export default function ResetPassword({ navigation }) {
-    const [email, setEmail] = useState('');
+    const [email, setEmail] = useState(''); // Stores the user's email input.
 
+    /**
+     * Handles the password reset process.
+     *
+     * This function validates the email input and sends a password reset email
+     * using Firebase Authentication. On success, it redirects the user to the login screen.
+     *
+     * @async
+     */
     const handleResetPassword = async () => {
         if (!email) {
             Alert.alert('Error', 'Please enter your email address.');

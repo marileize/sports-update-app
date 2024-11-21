@@ -3,15 +3,26 @@ import { View, Text, TextInput, Button, StyleSheet, Alert } from 'react-native';
 import { Dropdown } from 'react-native-element-dropdown';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import {getFirestore, addDoc, collection} from "firebase/firestore";
-import { auth } from '../../config/firebaseConfig'; // Ensure this is the correct path to your Firebase configuration
+import { auth } from '../../config/firebaseConfig';
 
 const db = getFirestore();
 
+/**
+ * A React component that allows users to add a new sports team to their profile.
+ *
+ * This component displays a form with a dropdown to select a sport and a text input for the team name.
+ * On submission, the data is saved to a Firebase Firestore collection.
+ *
+ * @param {object} props - Component props.
+ * @param {object} props.navigation - React Navigation object for navigating between screens.
+ * @returns {JSX.Element} The rendered component.
+ */
 export default function AddTeam({ navigation }) {
-    const [sport, setSport] = useState(null);
-    const [team, setTeam] = useState('');
-    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [sport, setSport] = useState(null); // Selected sport
+    const [team, setTeam] = useState(''); // Team name
+    const [isSubmitting, setIsSubmitting] = useState(false); // Prevents multiple submissions
 
+    // List of available sports for selection
     const sports = [
         { label: 'Soccer', value: 'soccer' },
         { label: 'Basketball', value: 'basketball' },
@@ -24,6 +35,10 @@ export default function AddTeam({ navigation }) {
         { label: 'Water Polo', value: 'water_polo' },
     ];
 
+    /**
+     * Handles the submission of the form.
+     * Validates the input, saves the data to Firestore, and navigates back to the home screen.
+     */
     const handleAddTeam = async () => {
         if (isSubmitting) return;
 
@@ -49,7 +64,7 @@ export default function AddTeam({ navigation }) {
                 userId: userId, // Reference the current user's ID
                 sport: sport,
                 team: team.trim(),
-                createdAt: new Date(), // Optional: track when the entry was created
+                createdAt: new Date(),
             });
 
             Alert.alert('Success', 'Team added successfully!');
@@ -82,9 +97,9 @@ export default function AddTeam({ navigation }) {
                     valueField="value"
                     placeholder="Select a sport"
                     searchPlaceholder="Search..."
-                    value={sport} // Use sport from state
+                    value={sport}
                     onChange={(item) => {
-                        setSport(item.value); // Update sport in state
+                        setSport(item.value);
                     }}
                     renderLeftIcon={() => (
                         <AntDesign style={styles.icon} color="black" name="Safety" size={20} />
