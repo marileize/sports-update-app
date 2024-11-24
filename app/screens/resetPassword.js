@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, TextInput, Button, Alert, StyleSheet, Text } from 'react-native';
+import { View, TextInput, TouchableOpacity, Alert, StyleSheet, Text } from 'react-native';
 import { sendPasswordResetEmail } from 'firebase/auth';
 import { auth } from '../../config/firebaseConfig';
 
@@ -55,7 +55,12 @@ export default function ResetPassword({ navigation }) {
                 autoCapitalize="none"
                 autoComplete="email"
             />
-            <Button title="Reset Password" onPress={handleResetPassword} />
+            <TouchableOpacity
+                style={styles.resetButton}
+                onPress={handleResetPassword}
+            >
+                <Text style={styles.resetButtonText}>Reset Password</Text>
+            </TouchableOpacity>
             <Text style={styles.linkText} onPress={() => navigation.navigate('Login')}>
                 Back to Login
             </Text>
@@ -75,6 +80,7 @@ const styles = StyleSheet.create({
         fontSize: 24,
         fontWeight: 'bold',
         marginBottom: 20,
+        color: '#4A90E2', // Same color as the home footer background
     },
     input: {
         width: '100%',
@@ -83,6 +89,19 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: '#ccc',
         borderRadius: 5,
+    },
+    resetButton: {
+        backgroundColor: '#4A90E2', // Same color as the home footer background
+        borderRadius: 8,
+        paddingVertical: 15,
+        alignItems: 'center',
+        width: '100%',
+        marginTop: 10,
+    },
+    resetButtonText: {
+        color: '#fff',
+        fontSize: 16,
+        fontWeight: 'bold',
     },
     linkText: {
         marginTop: 20,

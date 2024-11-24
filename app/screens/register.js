@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, TextInput, Button, StyleSheet, Text, Alert } from 'react-native';
+import { View, TextInput, TouchableOpacity, StyleSheet, Text, Alert } from 'react-native';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { getFirestore, setDoc, doc } from "firebase/firestore";
 import { auth } from '../../config/firebaseConfig';
@@ -91,7 +91,9 @@ const Register = () => {
                 onChangeText={setPassword}
                 secureTextEntry
             />
-            <Button title="Register" onPress={handleRegister} disabled={isSubmitting} />
+            <TouchableOpacity style={styles.registerButton} onPress={handleRegister} disabled={isSubmitting}>
+                <Text style={styles.registerButtonText}>Register</Text>
+            </TouchableOpacity>
         </View>
     );
 };
@@ -108,6 +110,8 @@ const styles = StyleSheet.create({
         fontSize: 24,
         fontWeight: 'bold',
         marginBottom: 20,
+        color: '#4A90E2',
+        textAlign: 'center',
     },
     input: {
         width: '100%',
@@ -117,10 +121,17 @@ const styles = StyleSheet.create({
         borderColor: '#ccc',
         borderRadius: 5,
     },
-    linkText: {
-        marginTop: 20,
-        color: '#1e90ff',
-        textDecorationLine: 'underline',
+    registerButton: {
+        backgroundColor: '#4A90E2',
+        padding: 15,
+        alignItems: 'center',
+        width: '100%',
+        marginTop: 10,
+    },
+    registerButtonText: {
+        color: '#fff',
+        fontSize: 16,
+        fontWeight: 'bold',
     },
 });
 

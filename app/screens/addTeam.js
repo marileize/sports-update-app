@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { Dropdown } from 'react-native-element-dropdown';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import {getFirestore, addDoc, collection} from "firebase/firestore";
@@ -112,7 +112,13 @@ export default function AddTeam({ navigation }) {
                     value={team}
                     onChangeText={(text) => setTeam(text)}
                 />
-                <Button title="Add Team" onPress={handleAddTeam} disabled={isSubmitting} />
+                <TouchableOpacity
+                    style={styles.addButton}
+                    onPress={handleAddTeam}
+                    disabled={isSubmitting}
+                >
+                    <Text style={styles.addButtonText}>Add Team</Text>
+                </TouchableOpacity>
             </View>
         </View>
     );
@@ -129,6 +135,7 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         textAlign: 'center',
         marginVertical: 16,
+        color: '#4A90E2',
     },
     form: {
         marginTop: 20,
@@ -163,5 +170,16 @@ const styles = StyleSheet.create({
     selectedText: {
         fontSize: 16,
         color: '#000',
+    },
+    addButton: {
+        backgroundColor: '#4A90E2',
+        borderRadius: 8,
+        paddingVertical: 15,
+        alignItems: 'center',
+    },
+    addButtonText: {
+        color: '#fff',
+        fontSize: 16,
+        fontWeight: 'bold',
     },
 });

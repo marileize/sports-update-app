@@ -1,11 +1,12 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { View, Text, Button, StyleSheet, FlatList, Image } from 'react-native';
+import { View, Text, StyleSheet, FlatList, Image, TouchableOpacity } from 'react-native';
 import { AuthContext } from '../../AuthContext';
 import { useNavigation } from '@react-navigation/native';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../../config/firebaseConfig';
 import serpApiConfig from '../../config/serpApiConfig';
 import axios from 'axios';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 /**
  * Home screen component that displays a list of sports teams and their latest match results.
@@ -80,12 +81,15 @@ export default function Home() {
 
                         if (sportsResults && sportsResults.game_spotlight && sportsResults.game_spotlight.teams) {
                             const teams = sportsResults.game_spotlight.teams;
-                            const matchInfo = `${teams[0].name} ${teams[0].score} X ` +
+                            const matchInfo = `${teams[0].name} ${teams[0].score} x ` +
                                                      `${teams[1].score} ${teams[1].name}`;
+                            const matchScore = `${teams[0].score} x ${teams[1].score}`;
+
                             return {
                                 team: team.team,
                                 sport: team.sport,
                                 matchInfo,
+                                matchScore,
                                 thumbnail1: teams[0]?.thumbnail,
                                 thumbnail2: teams[1]?.thumbnail,
                             };
@@ -109,14 +113,6 @@ export default function Home() {
         fetchSportsResults();
     }, [sportsTeams]);
 
-
-    /**
-     * Navigates to the "AddTeam" screen.
-     */
-    const navigateToAddTeam = () => {
-        navigation.navigate('AddTeam');
-    };
-
     if (loading) {
         return (
             <View style={styles.container}>
@@ -127,29 +123,54 @@ export default function Home() {
 
     return (
         <View style={styles.container}>
-            <Button title="Add New Team" onPress={navigateToAddTeam} />
-            <Button title="Logout" onPress={logout} />
-            {sportsResults.length > 0 ? (
-                <FlatList
-                    data={sportsResults}
-                    keyExtractor={(item, index) => index.toString()}
-                    renderItem={({ item }) => (
-                        <View style={styles.card}>
-                            <Text style={styles.cardTitle}>{item.sport} - {item.team}</Text>
-                            <Text>{item.matchInfo}</Text>
-                            {item.thumbnail1 && item.thumbnail2 && (
-                                <View style={styles.teamThumbnails}>
-                                    <Image source={{ uri: item.thumbnail1 }} style={styles.thumbnail} />
-                                    <Text>vs</Text>
-                                    <Image source={{ uri: item.thumbnail2 }} style={styles.thumbnail} />
-                                </View>
-                            )}
-                        </View>
-                    )}
-                />
-            ) : (
-                <Text style={styles.noTeamsText}>No sports results available.</Text>
-            )}
+            {/* Header */}
+            <View style={styles.header}>
+                <Text style={styles.headerText}>Sports Update App</Text>
+            </View>
+
+            {/* Content */}
+            <View style={styles.content}>
+                {sportsResults.length > 0 ? (
+                    <FlatList
+                        data={sportsResults}
+                        keyExtractor={(item, index) => index.toString()}
+                        renderItem={({ item }) => (
+                            <View style={styles.card}>
+                                <Text style={styles.cardTitle}>{item.team}</Text>
+                                <Text style={styles.cardSubheader}>{item.sport}</Text>
+                                {item.thumbnail1 && item.thumbnail2 && (
+                                    <View style={styles.teamThumbnails}>
+                                        <Image source={{ uri: item.thumbnail1 }} style={styles.thumbnail} />
+                                        <Text style={styles.cardMatchscore}>{item.matchScore}</Text>
+                                        <Image source={{ uri: item.thumbnail2 }} style={styles.thumbnail} />
+                                    </View>
+                                )}
+                                <Text style={styles.cardMatchinfoContainer}>
+                                    <Text style={styles.cardMatchinfo}>{item.matchInfo}</Text>
+                                </Text>
+                            </View>
+                        )}
+                    />
+                ) : (
+                    <Text style={styles.noTeamsText}>No sports results available.</Text>
+                )}
+            </View>
+
+            {/* Footer */}
+            <View style={styles.footer}>
+                <TouchableOpacity style={styles.footerButton} onPress={() => navigation.navigate('Home')}>
+                    <Icon name="home-outline" size={24} color="#fff" />
+                    <Text style={styles.footerText}>Home</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.footerButton} onPress={() => navigation.navigate('AddTeam')}>
+                    <Icon name="plus-circle-outline" size={24} color="#fff" />
+                    <Text style={styles.footerText}>New Team</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.footerButton} onPress={logout}>
+                    <Icon name="logout" size={24} color="#fff" />
+                    <Text style={styles.footerText}>Logout</Text>
+                </TouchableOpacity>
+            </View>
         </View>
     );
 }
@@ -157,10 +178,37 @@ export default function Home() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+        backgroundColor: '#f5f5f5',
+    },
+    header: {
+        backgroundColor: '#6C63FF',
+        paddingVertical: 20,
+        alignItems: 'center',
+    },
+    headerText: {
+        fontSize: 24,
+        fontWeight: 'bold',
+        color: '#fff',
+    },
+    content: {
+        flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
         backgroundColor: '#f5f5f5',
-        padding: 16,
+    },
+    footer: {
+        flexDirection: 'row',
+        justifyContent: 'space-around',
+        alignItems: 'center',
+        backgroundColor: '#6C63FF',
+        paddingVertical: 10,
+    },
+    footerButton: {
+        alignItems: 'center',
+    },
+    footerText: {
+        fontSize: 12,
+        color: '#fff',
     },
     card: {
         backgroundColor: '#fff',
@@ -168,6 +216,7 @@ const styles = StyleSheet.create({
         padding: 16,
         marginVertical: 8,
         width: '90%',
+        alignItems: 'center',
         shadowColor: '#000',
         shadowOpacity: 0.1,
         shadowRadius: 4,
@@ -175,9 +224,34 @@ const styles = StyleSheet.create({
         elevation: 3,
     },
     cardTitle: {
-        fontSize: 18,
+        fontSize: 16,
         fontWeight: 'bold',
-        marginBottom: 8,
+        textAlign: 'center',
+    },
+    cardSubheader: {
+        fontSize: 12,
+        color: '#888',
+        textAlign: 'center',
+    },
+    cardMatchscore: {
+        fontSize: 13,
+        fontWeight: 'bold',
+        color: '#555',
+        textAlign: 'center',
+    },
+    cardMatchinfoContainer: {
+        backgroundColor: '#f0f4ff', // Very light blue background
+        paddingVertical: 4, // Add vertical padding inside the container
+        paddingHorizontal: 10, // Add horizontal padding
+        borderRadius: 8, // Rounded corners for the background
+        alignSelf: 'center', // Center the container within the card
+        marginTop: 10, // Add spacing above the element
+    },
+    cardMatchinfo: {
+        fontSize: 14,
+        color: '#333', // Darker grey for better contrast
+        fontWeight: 'bold',
+        textAlign: 'center',
     },
     teamThumbnails: {
         flexDirection: 'row',

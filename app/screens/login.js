@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, TextInput, Button, Alert, StyleSheet, Text } from 'react-native';
+import { View, TextInput, TouchableOpacity, Alert, StyleSheet, Text } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../../config/firebaseConfig';
@@ -44,7 +44,7 @@ const Login = () => {
 
     return (
         <View style={styles.container}>
-            <Text style={styles.title}>Login</Text>
+            <Text style={styles.title}>Welcome to the Sports Update App</Text>
             <TextInput
                 style={styles.input}
                 placeholder="Email"
@@ -59,14 +59,15 @@ const Login = () => {
                 onChangeText={setPassword}
                 secureTextEntry
             />
-            <Button title="Login" onPress={handleLogin} />
+            <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
+                <Text style={styles.loginButtonText}>Login</Text>
+            </TouchableOpacity>
             <Text style={styles.linkText} onPress={() => navigation.navigate('Register')}>
                 Don't have an account? Register
             </Text>
             <Text style={styles.linkText} onPress={() => navigation.navigate('ResetPassword')}>
                 Forgot Password?
             </Text>
-
         </View>
     );
 };
@@ -83,6 +84,8 @@ const styles = StyleSheet.create({
         fontSize: 24,
         fontWeight: 'bold',
         marginBottom: 20,
+        color: '#4A90E2',
+        textAlign: 'center',
     },
     input: {
         width: '100%',
@@ -91,6 +94,19 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: '#ccc',
         borderRadius: 5,
+    },
+    loginButton: {
+        backgroundColor: '#4A90E2',
+        borderRadius: 5,
+        padding: 15,
+        alignItems: 'center',
+        width: '100%',
+        marginTop: 10,
+    },
+    loginButtonText: {
+        color: '#fff',
+        fontSize: 16,
+        fontWeight: 'bold',
     },
     linkText: {
         marginTop: 20,
