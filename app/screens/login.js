@@ -36,9 +36,8 @@ const Login = () => {
     const handleLogin = async () => {
         try {
             await signInWithEmailAndPassword(auth, email, password);
-            Alert.alert('Login Successful', 'You are now logged in!');
         } catch (error) {
-            Alert.alert('Login Failed', error.message);
+            Alert.alert('Login Failed', 'Invalid username or password');
         }
     };
 
