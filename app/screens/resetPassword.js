@@ -18,6 +18,25 @@ export default function ResetPassword({ navigation }) {
     const [email, setEmail] = useState(''); // Stores the user's email input.
 
     /**
+     * Maps Firebase error codes to user-friendly messages.
+     *
+     * @param {string} errorCode - The Firebase error code.
+     * @returns {string} A user-friendly error message.
+     */
+    const getFriendlyErrorMessage = (errorCode) => {
+        switch (errorCode) {
+            case 'auth/invalid-email':
+                return 'The email address is not valid. Please check and try again.';
+            case 'auth/user-not-found':
+                return 'No user found with this email. Please check and try again.';
+            case 'auth/too-many-requests':
+                return 'Too many requests. Please wait a moment and try again.';
+            default:
+                return 'An unexpected error occurred. Please try again later.';
+        }
+    };
+
+    /**
      * Handles the password reset process.
      *
      * This function validates the email input and sends a password reset email
@@ -39,7 +58,8 @@ export default function ResetPassword({ navigation }) {
                 [{ text: 'OK', onPress: () => navigation.navigate('Login') }]
             );
         } catch (error) {
-            Alert.alert('Error', error.message);
+            const friendlyMessage = getFriendlyErrorMessage(error.code);
+            Alert.alert('Error', friendlyMessage);
         }
     };
 
