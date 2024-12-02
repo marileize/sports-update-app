@@ -9,48 +9,135 @@ import axios from 'axios';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 /**
- * Home screen component that displays a list of sports teams and their latest match results.
+ * Extract scores and metadata from the sports API response.
  *
- * This component fetches the user's sports teams from Firebase Firestore
- * and their corresponding match results from SerpApi.
+ * This function handles various sports-specific score extraction logic
+ * based on the normalized sport name.
+ *
+ * @param {Object} response - API response containing sports results.
+ * @param {string} sport - The name of the sport.
+ * @returns {Object} - Extracted score and team metadata.
+ */
+function extractScores(response, sport) {
+    const normalizedSport = sport?.toLowerCase();
+    const gameSpotlight = response?.sports_results?.game_spotlight;
+
+    // Return default values if game data is unavailable
+    if (!gameSpotlight || !Array.isArray(gameSpotlight.teams) || gameSpotlight.teams.length < 2) {
+        return {
+            team1Score: 'N/A',
+            team2Score: 'N/A',
+            team1Name: 'Unknown',
+            team2Name: 'Unknown',
+            thumbnail1: null,
+            thumbnail2: null,
+        };
+    }
+
+    const teams = gameSpotlight.teams;
+
+    // Handle soccer-specific score extraction
+    if (normalizedSport === 'soccer') {
+        return {
+            team1Score: teams[0]?.score || 'N/A',
+            team2Score: teams[1]?.score || 'N/A',
+            team1Name: teams[0]?.name || 'Unknown',
+            team2Name: teams[1]?.name || 'Unknown',
+            thumbnail1: teams[0]?.thumbnail || null,
+            thumbnail2: teams[1]?.thumbnail || null,
+        };
+    }
+
+    // Handle baseball-specific score extraction
+    if (normalizedSport === 'baseball') {
+        return {
+            team1Score: teams[0]?.score?.R || 'N/A', // "R" represents runs in baseball
+            team2Score: teams[1]?.score?.R || 'N/A',
+            team1Name: teams[0]?.name || 'Unknown',
+            team2Name: teams[1]?.name || 'Unknown',
+            thumbnail1: teams[0]?.thumbnail || null,
+            thumbnail2: teams[1]?.thumbnail || null,
+        };
+    }
+
+    // Handle cricket-specific score extraction
+    if (normalizedSport === 'cricket') {
+        return {
+            team1Score: teams[0]?.score || 'N/A',
+            team2Score: teams[1]?.score || 'N/A',
+            team1Name: teams[0]?.name || 'Unknown',
+            team2Name: teams[1]?.name || 'Unknown',
+            thumbnail1: teams[0]?.thumbnail || null,
+            thumbnail2: teams[1]?.thumbnail || null,
+        };
+    }
+
+    // Handle hockey-specific score extraction
+    if (normalizedSport === 'hockey') {
+        return {
+            team1Score: teams[0]?.score || 'N/A',
+            team2Score: teams[1]?.score || 'N/A',
+            team1Name: teams[0]?.name || 'Unknown',
+            team2Name: teams[1]?.name || 'Unknown',
+            thumbnail1: teams[0]?.thumbnail || null,
+            thumbnail2: teams[1]?.thumbnail || null,
+        };
+    }
+
+    // Handle rugby-specific score extraction
+    if (normalizedSport === 'rugby') {
+        return {
+            team1Score: teams[0]?.score || 'N/A',
+            team2Score: teams[1]?.score || 'N/A',
+            team1Name: teams[0]?.name || 'Unknown',
+            team2Name: teams[1]?.name || 'Unknown',
+            thumbnail1: teams[0]?.thumbnail || null,
+            thumbnail2: teams[1]?.thumbnail || null,
+        };
+    }
+
+    // Handle basketball or other sports (fallback to .T for total score)
+    return {
+        team1Score: teams[0]?.score?.T || 'N/A',
+        team2Score: teams[1]?.score?.T || 'N/A',
+        team1Name: teams[0]?.name || 'Unknown',
+        team2Name: teams[1]?.name || 'Unknown',
+        thumbnail1: teams[0]?.thumbnail || null,
+        thumbnail2: teams[1]?.thumbnail || null,
+    };
+}
+
+/**
+ * Home screen component.
+ *
+ * Displays the user's saved sports teams and their latest match results.
+ * Includes navigation options for adding teams or logging out.
  *
  * @component
- * @returns {JSX.Element} The rendered component.
+ * @returns {JSX.Element} The rendered Home screen.
  */
 export default function Home() {
     const navigation = useNavigation();
     const { logout, user } = useContext(AuthContext);
-    const [sportsTeams, setSportsTeams] = useState([]); // Stores the user's sports teams
-    const [sportsResults, setSportsResults] = useState([]); // Stores the match results for the sports teams
-    const [loading, setLoading] = useState(true); // Tracks loading state
+    const [sportsTeams, setSportsTeams] = useState([]);
+    const [sportsResults, setSportsResults] = useState([]);
+    const [loading, setLoading] = useState(true);
 
-    /**
-     * Fetches the user's sports teams from the Firebase Firestore database.
-     */
+    // Fetch sports teams from Firestore
     useEffect(() => {
         const fetchSportsTeams = async () => {
             try {
-                if (!user?.uid) {
-                    console.error('User ID is undefined. Cannot fetch sports and teams.');
-                    return;
-                }
-                console.log('Fetching sports and teams for user ID:', user.uid);
+                if (!user?.uid) return; // Ensure user is logged in
 
                 const teamsQuery = query(
                     collection(db, 'sports_teams'),
                     where('userId', '==', user.uid)
                 );
-
                 const querySnapshot = await getDocs(teamsQuery);
-
-                const teams = [];
-                querySnapshot.forEach((doc) => {
-                    teams.push(doc.data());
-                });
-
-                setSportsTeams(teams);
+                const teams = querySnapshot.docs.map((doc) => doc.data());
+                setSportsTeams(teams);  // Update state with fetched teams
             } catch (error) {
-                console.error('Error fetching sports and teams:', error);
+                console.error('Error fetching sports teams:', error);
             } finally {
                 setLoading(false);
             }
@@ -59,13 +146,11 @@ export default function Home() {
         fetchSportsTeams();
     }, [user?.uid]);
 
-    /**
-     * Fetches the latest match results for the user's sports teams using the SerpApi.
-     */
+    // Fetch sports results using SerpApi
     useEffect(() => {
         const fetchSportsResults = async () => {
             try {
-                if (sportsTeams.length === 0) return;
+                if (sportsTeams.length === 0) return; // Skip if no teams
 
                 const results = await Promise.all(
                     sportsTeams.map(async (team) => {
@@ -74,37 +159,25 @@ export default function Home() {
                             q: query,
                             api_key: serpApiConfig.apiKey,
                         };
-
                         const response = await axios.get(serpApiConfig.baseUrl, { params });
+                        const extractedData = extractScores(response.data, team.sport);
 
-                        const sportsResults = response.data.sports_results || null;
-
-                        if (sportsResults && sportsResults.game_spotlight && sportsResults.game_spotlight.teams) {
-                            const teams = sportsResults.game_spotlight.teams;
-                            const matchInfo = `${teams[0].name} ${teams[0].score} x ` +
-                                                     `${teams[1].score} ${teams[1].name}`;
-                            const matchScore = `${teams[0].score} x ${teams[1].score}`;
-
-                            return {
-                                team: team.team,
-                                sport: team.sport,
-                                matchInfo,
-                                matchScore,
-                                thumbnail1: teams[0]?.thumbnail,
-                                thumbnail2: teams[1]?.thumbnail,
-                            };
-                        } else {
-                            console.log(`No game spotlight or teams data for ${query}`);
-                            return {
-                                team: team.team,
-                                sport: team.sport,
-                                matchInfo: 'No match information available.',
-                            };
-                        }
+                        return {
+                            team: team.team,
+                            sport: team.sport,
+                            matchInfo: `${extractedData.team1Score} x ${extractedData.team2Score}`,
+                            teamName1: extractedData.team1Name,
+                            teamName2: extractedData.team2Name,
+                            thumbnail1: extractedData.thumbnail1,
+                            thumbnail2: extractedData.thumbnail2,
+                            // Checks if the current sport is cricket.
+                            // This is used to apply cricket-specific styles and layout logic.
+                            isCricket: team.sport.toLowerCase() === 'cricket',
+                        };
                     })
                 );
 
-                setSportsResults(results);
+                setSportsResults(results); // Update state with results
             } catch (error) {
                 console.error('Error fetching sports results:', error);
             }
@@ -113,6 +186,7 @@ export default function Home() {
         fetchSportsResults();
     }, [sportsTeams]);
 
+    // Render loading state
     if (loading) {
         return (
             <View style={styles.container}>
@@ -123,31 +197,49 @@ export default function Home() {
 
     return (
         <View style={styles.container}>
-            {/* Header */}
             <View style={styles.header}>
                 <Text style={styles.headerText}>Sports Update App</Text>
             </View>
-
-            {/* Content */}
             <View style={styles.content}>
                 {sportsResults.length > 0 ? (
                     <FlatList
                         data={sportsResults}
                         keyExtractor={(item, index) => index.toString()}
                         renderItem={({ item }) => (
-                            <View style={styles.card}>
+                            <View style={[styles.card, item.isCricket && styles.cricketCard]}>
                                 <Text style={styles.cardTitle}>{item.team}</Text>
                                 <Text style={styles.cardSubheader}>{item.sport}</Text>
-                                {item.thumbnail1 && item.thumbnail2 && (
-                                    <View style={styles.teamThumbnails}>
-                                        <Image source={{ uri: item.thumbnail1 }} style={styles.thumbnail} />
-                                        <Text style={styles.cardMatchscore}>{item.matchScore}</Text>
-                                        <Image source={{ uri: item.thumbnail2 }} style={styles.thumbnail} />
-                                    </View>
+                                <View style={styles.teamThumbnails}>
+                                    {item.isCricket ? (
+                                        <>
+                                            <View style={styles.cricketTeamsContainer}>
+                                                <View style={styles.cricketTeam}>
+                                                    <Image source={{ uri: item.thumbnail1 }} style={styles.thumbnail} />
+                                                    <Text style={styles.teamName}>{item.teamName1}</Text>
+                                                </View>
+                                                <View style={styles.cricketTeam}>
+                                                    <Image source={{ uri: item.thumbnail2 }} style={styles.thumbnail} />
+                                                    <Text style={styles.teamName}>{item.teamName2}</Text>
+                                                </View>
+                                            </View>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <View style={styles.teamDetails}>
+                                                <Image source={{ uri: item.thumbnail1 }} style={styles.thumbnail} />
+                                                <Text style={styles.teamName}>{item.teamName1}</Text>
+                                            </View>
+                                            <Text style={styles.cardMatchinfo}>{item.matchInfo}</Text>
+                                            <View style={styles.teamDetails}>
+                                                <Image source={{ uri: item.thumbnail2 }} style={styles.thumbnail} />
+                                                <Text style={styles.teamName}>{item.teamName2}</Text>
+                                            </View>
+                                        </>
+                                    )}
+                                </View>
+                                {item.isCricket && (
+                                    <Text style={styles.cricketScore}>{item.matchInfo}</Text>
                                 )}
-                                <Text style={styles.cardMatchinfoContainer}>
-                                    <Text style={styles.cardMatchinfo}>{item.matchInfo}</Text>
-                                </Text>
                             </View>
                         )}
                     />
@@ -155,8 +247,6 @@ export default function Home() {
                     <Text style={styles.noTeamsText}>No sports results available.</Text>
                 )}
             </View>
-
-            {/* Footer */}
             <View style={styles.footer}>
                 <TouchableOpacity style={styles.footerButton} onPress={() => navigation.navigate('Home')}>
                     <Icon name="home-outline" size={24} color="#fff" />
@@ -194,7 +284,6 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: '#f5f5f5',
     },
     footer: {
         flexDirection: 'row',
@@ -233,41 +322,58 @@ const styles = StyleSheet.create({
         color: '#888',
         textAlign: 'center',
     },
-    cardMatchscore: {
-        fontSize: 13,
-        fontWeight: 'bold',
-        color: '#555',
-        textAlign: 'center',
-    },
-    cardMatchinfoContainer: {
-        backgroundColor: '#f0f4ff', // Very light blue background
-        paddingVertical: 4, // Add vertical padding inside the container
-        paddingHorizontal: 10, // Add horizontal padding
-        borderRadius: 8, // Rounded corners for the background
-        alignSelf: 'center', // Center the container within the card
-        marginTop: 10, // Add spacing above the element
-    },
-    cardMatchinfo: {
-        fontSize: 14,
-        color: '#333', // Darker grey for better contrast
-        fontWeight: 'bold',
-        textAlign: 'center',
-    },
     teamThumbnails: {
         flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'center',
+        justifyContent: 'space-evenly', // Ensure equal spacing
+        width: '100%',
         marginTop: 8,
+        paddingHorizontal: 16,
+    },
+    teamDetails: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        flex: 1, // Equal width for both team sections
+        maxWidth: '40%', // Limit width to prevent overflow
+    },
+    cardMatchinfo: {
+        fontSize: 14,
+        fontWeight: 'bold',
+        color: '#555',
+        textAlign: 'center',
+        marginHorizontal: 16,
+    },
+    cricketCard: {
+        borderColor: '#FFD700',
+        borderWidth: 1,
+    },
+    cricketScore: {
+        fontSize: 14,
+        fontWeight: 'bold',
+        color: '#555',
+        textAlign: 'center',
+        marginHorizontal: 16,
+    },
+    cricketTeamsContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-around',
+        marginTop: 8,
+        width: '100%',
+    },
+    cricketTeam: {
+        alignItems: 'center',
+        justifyContent: 'center',
     },
     thumbnail: {
         width: 50,
         height: 50,
         borderRadius: 25,
-        marginHorizontal: 8,
+        marginBottom: 4,
     },
-    noTeamsText: {
-        marginTop: 20,
-        fontSize: 16,
-        color: '#888',
+    teamName: {
+        fontSize: 12,
+        fontWeight: '600',
+        textAlign: 'center',
+        color: '#333',
     },
 });
