@@ -6,6 +6,26 @@ import { auth } from '../../config/firebaseConfig';
 
 const db = getFirestore();
 
+/**
+ * Firebase error messages mapping.
+ * Maps Firebase error codes to user-friendly error messages.
+ */
+const firebaseErrorMessages = {
+    'auth/email-already-in-use': 'This email is already registered.',
+    'auth/invalid-email': 'The email address is invalid.',
+    'auth/operation-not-allowed': 'Registration is currently disabled. Please try again later.',
+    'auth/weak-password': 'Your password is too weak. Please use a stronger password.',
+};
+
+/**
+ * Gets a custom error message for the provided Firebase error code.
+ *
+ * @param {string} errorCode - The Firebase error code.
+ * @returns {string} A user-friendly error message.
+ */
+const getCustomMessage = (errorCode) => {
+    return firebaseErrorMessages[errorCode] || 'An unexpected error occurred. Please try again.';
+};
 
 /**
  * Register screen component for creating a new user account.
@@ -62,7 +82,9 @@ const Register = () => {
 
             Alert.alert('Registration Successful', 'Your account has been created!');
         } catch (error) {
-            Alert.alert('Registration Failed', error.message);
+            // Handle Firebase errors
+            const errorMessage = getCustomMessage(error.code);
+            Alert.alert('Registration Failed', errorMessage);
         } finally {
             setIsSubmitting(false);
         }
