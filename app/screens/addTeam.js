@@ -24,15 +24,13 @@ export default function AddTeam({ navigation }) {
 
     // List of available sports for selection
     const sports = [
-        { label: 'Soccer', value: 'soccer' },
-        { label: 'Basketball', value: 'basketball' },
-        { label: 'Baseball', value: 'baseball' },
-        { label: 'American Football', value: 'american_football' },
-        { label: 'Cricket', value: 'cricket' },
-        { label: 'Hockey', value: 'hockey' },
-        { label: 'Rugby', value: 'rugby' },
-        { label: 'Volleyball', value: 'volleyball' },
-        { label: 'Water Polo', value: 'water_polo' },
+        { label: 'Soccer', value: 'Soccer' },
+        { label: 'Basketball', value: 'Basketball' },
+        { label: 'Baseball', value: 'Baseball' },
+        { label: 'American Football', value: 'American Football' },
+        { label: 'Cricket', value: 'Cricket' },
+        { label: 'Hockey', value: 'Hockey' },
+        { label: 'Rugby', value: 'Rugby' },
     ];
 
     /**
